@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"time"
 )
 
@@ -26,11 +27,39 @@ const (
 	WHITE_COLOR  = "\033[37m"
 )
 
+var command = "new"
+
 func main() {
+	args := os.Args[1:]
+
+	if len(args) > 0 {
+		command = args[0]
+	}
+
+	var apiUrl = "https://hacker-news.firebaseio.com/v0"
+
+	switch command {
+	case "new":
+		apiUrl = apiUrl + "/newstories.json"
+		break
+	case "best":
+		apiUrl = apiUrl + "/beststories.json"
+		break
+	case "top":
+		apiUrl = apiUrl + "/topstories.json"
+		break
+	case "ask":
+		apiUrl = apiUrl + "/askstories.json"
+		break
+	default:
+		fmt.Printf("Command %s does not exist\n", command)
+		os.Exit(1)
+	}
+
 	var latestStoryId int
 
 	for {
-		newStories, err := getNewStories()
+		newStories, err := getNewStories(apiUrl)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -70,10 +99,10 @@ func main() {
 	}
 }
 
-func getNewStories() ([]int, error) {
+func getNewStories(apiUrl string) ([]int, error) {
 	var items []int
 
-	resp, err := http.Get("https://hacker-news.firebaseio.com/v0/newstories.json")
+	resp, err := http.Get(apiUrl)
 	if err != nil {
 		return nil, err
 	}
