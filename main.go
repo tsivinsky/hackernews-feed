@@ -15,6 +15,17 @@ type Story struct {
 	By    string `json:"by"`
 }
 
+const (
+	RESET_COLOR  = "\033[0m"
+	RED_COLOR    = "\033[31m"
+	GREEN_COLOR  = "\033[32m"
+	YELLOW_COLOR = "\033[33m"
+	BLUE_COLOR   = "\033[34m"
+	PURPLE_COLOR = "\033[35m"
+	CYAN_COLOR   = "\033[36m"
+	WHITE_COLOR  = "\033[37m"
+)
+
 func main() {
 	var latestStoryId int
 
@@ -35,9 +46,18 @@ func main() {
 			log.Fatal(err)
 		}
 
+		if story.Id == 0 {
+			continue
+		}
+
 		latestStoryId = story.Id
 
-		fmt.Printf("\"%s\" by %s\n", story.Title, story.By)
+		fmt.Printf("\"")
+		fmt.Print(string(YELLOW_COLOR))
+		fmt.Printf("%s", story.Title)
+		fmt.Print(string(RESET_COLOR))
+		fmt.Print("\"")
+		fmt.Printf(" by %s\n", story.By)
 
 		var url string
 		if story.Url != "" {
@@ -46,7 +66,7 @@ func main() {
 			url = fmt.Sprintf("https://news.ycombinator.com/item?id=%d", story.Id)
 		}
 
-		fmt.Printf("  %s\n", url)
+		fmt.Printf("  - %s\n", url)
 	}
 }
 
