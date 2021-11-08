@@ -129,6 +129,11 @@ func listenForStories(apiUrl string, c chan Story) {
 			notify.Push("New Hacker Story", story.Title, "", notificator.UR_NORMAL)
 		}
 
+		if story.Url == "" {
+			story.Url = fmt.Sprintf("https://news.ycombinator.com/item?id=%d", story.Id)
+			story.Title = fmt.Sprintf("[Ask] %s", story.Title)
+		}
+
 		latestStoryId = story.Id
 
 		c <- story
@@ -148,21 +153,13 @@ func openInBrowser(url string) error {
 func printStory(story Story) {
 	var storyInString string
 
-	var url string
-	if story.Url != "" {
-		url = story.Url
-	} else {
-		url = fmt.Sprintf("https://news.ycombinator.com/item?id=%d", story.Id)
-		story.Title = fmt.Sprintf("[Ask] %s", story.Title)
-	}
-
 	storyInString += "\""
 	storyInString += string(YELLOW_COLOR)
 	storyInString += fmt.Sprintf("%s", story.Title)
 	storyInString += string(RESET_COLOR)
 	storyInString += "\""
 	storyInString += fmt.Sprintf(" by %s\n", story.By)
-	storyInString += fmt.Sprintf("  - %s\n", url)
+	storyInString += fmt.Sprintf("  - %s\n", story.Url)
 
 	fmt.Print(storyInString)
 }
