@@ -109,6 +109,7 @@ func listenForStories(apiUrl string, c chan Story) {
 			log.Fatal(err)
 		}
 
+		// Sometimes api returns empty story, and at this point I'm too afraid to ask
 		if story.Id == 0 {
 			continue
 		}
@@ -117,6 +118,7 @@ func listenForStories(apiUrl string, c chan Story) {
 			notify.Push("New Hacker Story", story.Title, "", notificator.UR_NORMAL)
 		}
 
+		// [Ask] stories don't have external url
 		if story.Url == "" {
 			story.Url = fmt.Sprintf("https://news.ycombinator.com/item?id=%d", story.Id)
 			story.Title = fmt.Sprintf("[Ask] %s", story.Title)
