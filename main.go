@@ -71,7 +71,7 @@ func main() {
 	}
 }
 
-func listenForCommands(c chan string) {
+func listenForCommands(cmdChan chan string) {
 	reader := bufio.NewReader(os.Stdin)
 
 	for {
@@ -81,11 +81,11 @@ func listenForCommands(c chan string) {
 		}
 		s = strings.TrimSpace(s)
 
-		c <- s
+		cmdChan <- s
 	}
 }
 
-func listenForStories(apiUrl string, c chan Story) {
+func listenForStories(apiUrl string, storyChan chan Story) {
 	notify := notificator.New(notificator.Options{
 		AppName: "hacker-news-feed",
 	})
@@ -126,7 +126,7 @@ func listenForStories(apiUrl string, c chan Story) {
 
 		latestStoryId = story.Id
 
-		c <- story
+		storyChan <- story
 	}
 }
 
