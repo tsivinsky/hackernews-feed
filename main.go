@@ -2,24 +2,16 @@ package main
 
 import (
 	"bufio"
-	"encoding/json"
 	"fmt"
 	"log"
-	"net/http"
 	"os"
 	"os/exec"
 	"strings"
 	"time"
 
 	"github.com/0xAX/notificator"
+	"github.com/tsivinsky/hackernews-feed/api"
 )
-
-type Story struct {
-	Id    int    `json:"id"'`
-	Title string `json:"title"`
-	Url   string `json:"url"`
-	By    string `json:"by"`
-}
 
 const (
 	RESET_COLOR  = "\033[0m"
@@ -49,13 +41,15 @@ func main() {
 		os.Exit(1)
 	}
 
-	storyChan := make(chan Story)
+	apiUrl := fmt.Sprintf("%s/%sstories.json", api.BaseApiUrl, command)
+
+	storyChan := make(chan api.Story)
 	cmdChan := make(chan string)
 
 	go listenForStories(apiUrl, storyChan)
 	go listenForCommands(cmdChan)
 
-	var story Story
+	var story api.Story
 	for {
 		select {
 		case story = <-storyChan:
@@ -85,7 +79,7 @@ func listenForCommands(cmdChan chan string) {
 	}
 }
 
-func listenForStories(apiUrl string, storyChan chan Story) {
+func listenForStories(apiUrl string, storyChan chan api.Story) {
 	notify := notificator.New(notificator.Options{
 		AppName: "hacker-news-feed",
 	})
@@ -93,7 +87,7 @@ func listenForStories(apiUrl string, storyChan chan Story) {
 	var latestStoryId int
 
 	for {
-		newStories, err := getNewStories(apiUrl)
+		newStories, err := api.GetNewStories(apiUrl)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -104,7 +98,7 @@ func listenForStories(apiUrl string, storyChan chan Story) {
 			continue
 		}
 
-		story, err := getStoryById(newStoryId)
+		story, err := api.GetStoryById(newStoryId)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -140,7 +134,7 @@ func openInBrowser(url string) error {
 	return nil
 }
 
-func printStory(story Story) {
+func printStory(story api.Story) {
 	var storyInString string
 
 	storyInString += "\""
