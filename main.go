@@ -32,7 +32,10 @@ const (
 	WHITE_COLOR  = "\033[37m"
 )
 
-var command = "new"
+var (
+	allowedCommands = []string{"new", "best", "top", "ask"}
+	command         = "new"
+)
 
 func main() {
 	args := os.Args[1:]
@@ -41,23 +44,8 @@ func main() {
 		command = args[0]
 	}
 
-	var apiUrl = "https://hacker-news.firebaseio.com/v0"
-
-	switch command {
-	case "new":
-		apiUrl = apiUrl + "/newstories.json"
-		break
-	case "best":
-		apiUrl = apiUrl + "/beststories.json"
-		break
-	case "top":
-		apiUrl = apiUrl + "/topstories.json"
-		break
-	case "ask":
-		apiUrl = apiUrl + "/askstories.json"
-		break
-	default:
-		fmt.Printf("Command %s does not exist\n", command)
+	if !isCommandAllowed(command) {
+		fmt.Printf("Command %s doesn't exist\n", command)
 		os.Exit(1)
 	}
 
@@ -164,37 +152,12 @@ func printStory(story Story) {
 	fmt.Print(storyInString)
 }
 
-func getNewStories(apiUrl string) ([]int, error) {
-	var items []int
-
-	resp, err := http.Get(apiUrl)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	err = json.NewDecoder(resp.Body).Decode(&items)
-	if err != nil {
-		return nil, err
+func isCommandAllowed(command string) bool {
+	for _, cmd := range allowedCommands {
+		if cmd == command {
+			return true
+		}
 	}
 
-	return items, nil
-}
-
-func getStoryById(storyId int) (Story, error) {
-	var story Story
-
-	url := fmt.Sprintf("https://hacker-news.firebaseio.com/v0/item/%d.json", storyId)
-	resp, err := http.Get(url)
-	if err != nil {
-		return Story{}, err
-	}
-	defer resp.Body.Close()
-
-	err = json.NewDecoder(resp.Body).Decode(&story)
-	if err != nil {
-		return Story{}, err
-	}
-
-	return story, nil
+	return false
 }
