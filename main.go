@@ -105,7 +105,6 @@ func listenForStories(apiUrl string, storyChan chan api.Story) {
 		newStoryId := newStories[0]
 
 		if newStoryId == latestStoryId {
-			log.Println("Going to sleep")
 			time.Sleep(time.Duration(intervalTime) * time.Second)
 			continue
 		}
