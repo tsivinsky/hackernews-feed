@@ -6,6 +6,8 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"reflect"
+	"strconv"
 	"strings"
 	"time"
 
@@ -29,14 +31,23 @@ var (
 	command         = "new"
 )
 
+var (
+	intervalTime int = 2
+)
+
 func main() {
 	args := os.Args[1:]
+
+	if i, exists := isItemExistInSlice(args, "-i"); exists {
+		intervalTime, _ = strconv.Atoi(args[i+1])
+		args = append(args[:i], args[i+2:]...) // Go Team, please add method for removing elements from slice, pls, pls, pls
+	}
 
 	if len(args) > 0 {
 		command = args[0]
 	}
 
-	if !isCommandAllowed(command) {
+	if _, exists := isItemExistInSlice(allowedCommands, command); !exists {
 		fmt.Printf("Command %s doesn't exist\n", command)
 		os.Exit(1)
 	}
@@ -94,7 +105,8 @@ func listenForStories(apiUrl string, storyChan chan api.Story) {
 		newStoryId := newStories[0]
 
 		if newStoryId == latestStoryId {
-			time.Sleep(2 * time.Second)
+			log.Println("Going to sleep")
+			time.Sleep(time.Duration(intervalTime) * time.Second)
 			continue
 		}
 
@@ -148,12 +160,14 @@ func printStory(story api.Story) {
 	fmt.Print(storyInString)
 }
 
-func isCommandAllowed(command string) bool {
-	for _, cmd := range allowedCommands {
-		if cmd == command {
-			return true
+func isItemExistInSlice(slice interface{}, item interface{}) (int, bool) {
+	s := reflect.ValueOf(slice)
+
+	for i := 0; i < s.Len(); i++ {
+		if s.Index(i).Interface() == item {
+			return i, true
 		}
 	}
 
-	return false
+	return -1, false
 }
